@@ -25,8 +25,17 @@ class TaskListController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.leftBarButtonItem = editButtonItem
-    }    
+        if tasks[sectionsTypePosition[1]]?.count != 0 || tasks[sectionsTypePosition[0]]?.count != 0{
+            navigationItem.leftBarButtonItem = editButtonItem
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if tasks[sectionsTypePosition[1]]?.count != 0 || tasks[sectionsTypePosition[0]]?.count != 0{
+            navigationItem.leftBarButtonItem = editButtonItem
+        }
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toCreateScreen" {
             let destination = segue.destination as! TaskEditController
@@ -58,16 +67,24 @@ class TaskListController: UITableViewController {
     // MARK: - Количество строк в определенной секции
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let taskType = sectionsTypePosition[section]
-        guard let currentTaskType = tasks[taskType], !currentTaskType.isEmpty else {
+        
+        if taskIsExist(taskType: taskType){
             return 1
         }
-        return currentTaskType.count
+        
+        return tasks[taskType]!.count
     }
     
     //MARK: - Присвоение задаче статус выполнена по нажатию на нее
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // 1. Проверка на существование задачи
         let taskType = sectionsTypePosition[indexPath.section]
+        
+        if taskIsExist(taskType: taskType){
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
+        }
+        
         guard let _ = tasks[taskType]?[indexPath.row] else {
             return
         }
@@ -89,6 +106,11 @@ class TaskListController: UITableViewController {
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         // 1. Получение данных о задаче которую необходимо отметить как запланированную
         let taskType = sectionsTypePosition[indexPath.section]
+        
+        if taskIsExist(taskType: taskType){
+            return nil
+        }
+        
         guard let _ = tasks[taskType]?[indexPath.row] else {
             return nil
         }
@@ -135,13 +157,19 @@ class TaskListController: UITableViewController {
     // MARK: - Удаление строчки через режим редактирования
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         let taskType = sectionsTypePosition[indexPath.section]
+        
+        if taskIsExist(taskType: taskType){
+            return
+        }
+        
         tasks[taskType]?.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .automatic)
+        tableView.deleteRows(at: [indexPath], with: .right)
         
     }
     
     // MARK: - Перемещение строк в режиме редактирования
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+    
         // Получение секции из которой необходимо переместить строку
         let taskTypeFrom = sectionsTypePosition[sourceIndexPath.section]
         
@@ -226,7 +254,7 @@ class TaskListController: UITableViewController {
         // Получение данных о задаче, которую необходимо вывести в ячейке
         let taskType = sectionsTypePosition[indexPath.section]
         
-        if tasks[taskType]?.count == 0 {
+        if taskIsExist(taskType: taskType) {
             cell.title.text = "Have no tasks"
             cell.title.textColor = .lightGray
             cell.symbol.text = ""
@@ -247,7 +275,7 @@ class TaskListController: UITableViewController {
 //        // Изменение названия ячейки
 //        cell.title.text = currentTask.title
 //        // Изменение символа в ячейке
-//        cell.symbol.text = getSymbolForTask(with: currentTask.status)
+        cell.symbol.text = getSymbolForTask(with: tasks[taskType]?[indexPath.row].status as! TaskStatus)
 //
         // Изменение цвета
         if currentTask?.status == .planned {
@@ -271,6 +299,10 @@ class TaskListController: UITableViewController {
             resultSymbol = ""
         }
         return resultSymbol
+    }
+    
+    private func taskIsExist(taskType: TaskPriority) -> Bool{
+        return tasks[taskType]?.count == 0
     }
     
 }
