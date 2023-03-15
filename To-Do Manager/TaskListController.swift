@@ -58,7 +58,7 @@ class TaskListController: UITableViewController {
     // MARK: - Количество строк в определенной секции
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let taskType = sectionsTypePosition[section]
-        guard let currentTaskType = tasks[taskType] else {
+        guard let currentTaskType = tasks[taskType], !currentTaskType.isEmpty else {
             return 1
         }
         return currentTaskType.count
@@ -225,19 +225,32 @@ class TaskListController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "taskCellStack", for: indexPath) as! TaskCell
         // Получение данных о задаче, которую необходимо вывести в ячейке
         let taskType = sectionsTypePosition[indexPath.section]
-        guard let currentTask = tasks[taskType]?[indexPath.row] else {
+        
+        if tasks[taskType]?.count == 0 {
             cell.title.text = "Have no tasks"
             cell.title.textColor = .lightGray
+            cell.symbol.text = ""
+            cell.symbol.textColor = .lightGray
             return cell
         }
         
-        // Изменение названия ячейки
-        cell.title.text = currentTask.title
-        // Изменение символа в ячейке
-        cell.symbol.text = getSymbolForTask(with: currentTask.status)
+        let currentTask = tasks[taskType]?[indexPath.row]
         
+        cell.title.text = currentTask?.title
+        
+//        guard let currentTask = tasks[taskType] else {
+//            cell.title.text = "Have no tasks"
+//            cell.title.textColor = .lightGray
+//            return cell
+//        }
+//
+//        // Изменение названия ячейки
+//        cell.title.text = currentTask.title
+//        // Изменение символа в ячейке
+//        cell.symbol.text = getSymbolForTask(with: currentTask.status)
+//
         // Изменение цвета
-        if currentTask.status == .planned {
+        if currentTask?.status == .planned {
             cell.title.textColor = .black
             cell.symbol.textColor = .black
         } else {
