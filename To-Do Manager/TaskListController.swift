@@ -20,7 +20,6 @@ class TaskListController: UITableViewController {
         }
     }
     var taskStatusPosition: [TaskStatus] = [.planned, .completed]
-    
     var sectionsTypePosition: [TaskPriority] = [.important, .normal]
     
     override func viewDidLoad() {
@@ -163,8 +162,7 @@ class TaskListController: UITableViewController {
         }
         
         tasks[taskType]?.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .right)
-        
+        tableView.deleteRows(at: [indexPath], with: .automatic)
     }
     
     // MARK: - Перемещение строк в режиме редактирования
@@ -304,5 +302,4 @@ class TaskListController: UITableViewController {
     private func taskIsExist(taskType: TaskPriority) -> Bool{
         return tasks[taskType]?.count == 0
     }
-    
 }
